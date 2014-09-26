@@ -1,0 +1,8 @@
+*.py[oc]
+*.sw[opn]
+*.egg-info
+/build/
+/debian/files
+/debian/*debhelper*
+/debian/*.substvars
+/debian/solute-colors/
