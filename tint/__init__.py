@@ -1,0 +1,1 @@
+from .tint import TintRegistry
