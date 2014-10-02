@@ -39,6 +39,9 @@ import os
 import collections
 import sys
 
+from pkg_resources import resource_listdir
+from pkg_resources import resource_filename
+
 from colormath import color_objects
 from colormath import color_conversions
 from colormath import color_diff
@@ -88,12 +91,10 @@ class TintRegistry(object):
         self._colors_by_system_lab = {}
         self._hex_by_color = {}
         if load_defaults:
-            working_dir = os.path.dirname(__file__) or "."
-            #for filename in os.listdir(os.path.dirname(__file__) or "."):
-            for filename in os.listdir(os.path.join(working_dir, "data")):
+            for filename in resource_listdir("tint", "data"):
                 base, ext = os.path.splitext(filename)
                 if ext == ".txt":
-                    self.add_colors(base, os.path.join(working_dir, "data", filename))
+                    self.add_colors(base, resource_filename("tint", "data/" + filename))
 
     def add_colors(self, system, colors_or_filename):
         """Add color definition to a given color system.
@@ -105,6 +106,9 @@ class TintRegistry(object):
 
         i.e. a color name (possibly with whitespace), and a hex code prefixed
         by `#` that will be interpreted as a sRGB value.
+
+        If you provide a file-like object (i.e. one with a ``read()`` method), make
+        sure you have opened it with the correct encoding.
 
         Alternatively, you may pass a mapping (e.g. ``{u"café au lait": "a67b5b", ...}``)
         or a sequence of tuples (e.g. ``[(u"café au lait", "a67b5b"), ...]``).
@@ -127,7 +131,7 @@ class TintRegistry(object):
 
         """
         if hasattr(colors_or_filename, "read"):
-            colors = _read_colors(f)
+            colors = _read_colors(colors_or_filename)
         elif isinstance(colors_or_filename, (str, unicode)):
             with io.open(colors_or_filename, encoding="utf-8") as f:
                 colors = _read_colors(f)
