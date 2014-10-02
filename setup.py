@@ -17,6 +17,7 @@ setup(
         "numpy",
         "pyicu",
         "fuzzywuzzy",
+        "sphinxcontrib-napoleon",
     ],
 )
 
