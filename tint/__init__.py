@@ -34,3 +34,5 @@ Examples:
 """
 
 from .tint import TintRegistry
+
+__version__ = "0.2"
