@@ -76,7 +76,7 @@ class TintRegistry(object):
 
             café au lait,a67b5b
 
-        i.e. a color name and a sRGB hex code, separated by by `,`. Note that
+        i.e. a color name and a sRGB hex code, separated by by comma (``,``). Note that
         this is standard excel-style csv format without headers.
 
         You may add to already existing color system. Previously existing color
@@ -109,12 +109,12 @@ class TintRegistry(object):
         Args:
           system (string): The color system the colors should be added to
             (e.g. ``"en"``).
-          color_definitions (sequence of tuples): An iterable of tuples
+          color_definitions (iterable of tuples): Color name / sRGB value pairs
             (e.g.  ``[("white", "ffffff"), ("red", "ff0000")]``)
 
         Examples:
-          >>> tint_registry = TintRegistry()
           >>> color_definitions = {"greenish": "336633", "blueish": "334466"}
+          >>> tint_registry = TintRegistry()
           >>> tint_registry.add_colors("vague", color_definitions.iteritems())
 
         """
@@ -165,12 +165,13 @@ class TintRegistry(object):
 
         # We want the standard scorer *plus* the set scorer, because colors are often
         # (but not always) related by sub-strings
+        color_names = self._hex_by_color.keys()
         set_match = dict(fuzzywuzzy.process.extract(
             in_string,
-            self._hex_by_color.keys(),
+            color_names,
             scorer=fuzzywuzzy.fuzz.token_set_ratio
         ))
-        standard_match = dict(fuzzywuzzy.process.extract(in_string, self._hex_by_color.keys()))
+        standard_match = dict(fuzzywuzzy.process.extract(in_string, color_names))
 
         # This would be much easier with a collections.Counter, but alas! it's a 2.7 feature.
         key_union = set(set_match) | set(standard_match)
