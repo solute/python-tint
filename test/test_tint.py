@@ -42,15 +42,6 @@ def test_nearest_filter(tint_registry):
     assert nearest_color == u"weiß"
 
 
-def test_nearest_filter_dict(tint_registry):
-    hex_code, score = tint_registry.match_name("purple")
-    nearest_color, distance = tint_registry.find_nearest(
-        hex_code,
-        filter_set={"ff0000": "red", "00ff00": "green"}
-    )
-    assert nearest_color == "red"
-
-
 def test_nearest_de_en(tint_registry):
     hex_code, score = tint_registry.match_name(u"perlweiß")
     nearest_color, distance = tint_registry.find_nearest(
@@ -102,6 +93,12 @@ def test_add_color_definitions_from_csv(no_default_tint_registry):
     nearest_color, distance = no_default_tint_registry.find_nearest(hex_code, system="vague")
     assert hex_code == GREENISH
     assert nearest_color == "greenish"
+
+
+def test_find_no_system(no_default_tint_registry):
+    with pytest.raises(ValueError):
+        no_default_tint_registry.find_nearest("000000", "not_a_real_system")
+
 
 if __name__ == '__main__':
     pytest.main()

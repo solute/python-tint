@@ -77,11 +77,11 @@ class TintRegistry(object):
             café au lait,a67b5b
 
         i.e. a color name and a sRGB hex code, separated by by `,`. Note that
-        this is a standard excel-style csv format without headers.
+        this is standard excel-style csv format without headers.
 
-        Note:
-          Existing color definitions of the same (normalized) name will be
-            overwritten, regardless of the color system.
+        You may add to already existing color system. Previously existing color
+        definitions of the same (normalized) name will be overwritten,
+        regardless of the color system.
 
         Args:
           system (string): The color system the colors should be added to
@@ -102,9 +102,9 @@ class TintRegistry(object):
     def add_colors(self, system, colors):
         """Add color definition to a given color system.
 
-        Note:
-          Existing color definitions of the same (normalized) name will be
-            overwritten, regardless of the color system.
+        You may add to already existing color system. Previously existing color
+        definitions of the same (normalized) name will be overwritten,
+        regardless of the color system.
 
         Args:
           system (string): The color system the colors should be added to
@@ -143,9 +143,8 @@ class TintRegistry(object):
         there's a lot of guessing going on. It's the callers responsibility to judge if the return
         value should be trusted.
 
-        Note:
-          For normalization purposes, this method implements "normalize an arbitrary color name
-            to a sRGB value".
+        In normalization terms, this method implements "normalize an arbitrary color name
+        to a sRGB value".
 
         Args:
           in_string (string): The input string containing something resembling
@@ -180,30 +179,25 @@ class TintRegistry(object):
 
         return MatchResult(self._hex_by_color[color_name], score / 2)
 
-    def find_nearest(self, hex_code, system=None, filter_set=None):
+    def find_nearest(self, hex_code, system, filter_set=None):
         """Find a color name that's most similar to a given sRGB hex code.
 
-        Note:
-          For normalization purposes, this method implements "normalize an arbitrary sRGB value
-            to a well-defined color name".
+        In normalization terms, this method implements "normalize an arbitrary sRGB value
+        to a well-defined color name".
 
         Args:
-          system (string, optional): The color system. Currently, ``"de"``, ``"en"`` and
-            ``"ral"`` are the default systems. May be ommitted if `filter_set` is a
-            mapping. Defaults to None.
-          filter_set (dict or list of string, optional): Limits the output choices
-            to fewer color names. If given a list of names (e.g. ``["black", "white"]``),
-            these names must be present in the given system. If it's a dict of hex
-            values and color names (e.g. ``{"000000": "black", "ffffff": "white"}`` -
-            notice the hex strings make up the keys, not the values of the dict), the
-            argument `system` is ignored and may be ommitted.  If omitted, all color
-            names of the system are considered. Defaults to None.
+          system (string): The color system. Currently, ``"de"``, ``"en"`` and
+            ``"ral"`` are the default systems.
+          filter_set (iterable of string, optional): Limits the output choices
+            to fewer color names. The names (e.g. ``["black", "white"]``) must be
+            present in the given system.
+            If omitted, all color names of the system are considered. Defaults to None.
 
         Returns:
           A named tuple with the members `color_name` and `distance`.
 
         Raises:
-          TypeError: If argument `system` is not passed and `filter_set` is not a mapping.
+          ValueError: If argument `system` is not a registered color system.
 
         Examples:
           >>> tint_registry = TintRegistry()
@@ -214,29 +208,23 @@ class TintRegistry(object):
 
         """
 
-        filter_set_is_mapping = isinstance(filter_set, collections.Mapping)
-        if system is None and not filter_set_is_mapping:
-            raise TypeError(
-                "find_nearest() needs argument 'system' if 'filter_set' is not a Mapping"
+        if system not in self._colors_by_system_hex:
+            raise ValueError(
+                "%r is not a registered color system. Try one of %r"
+                % (system, self._colors_by_system_hex.keys())
             )
         hex_code = hex_code.lower().strip()
 
         # Try direct hit (fast path)
-        if filter_set_is_mapping:
-            if hex_code in filter_set:
-                return filter_set[hex_code]
-        elif hex_code in self._colors_by_system_hex[system]:
+        if hex_code in self._colors_by_system_hex[system]:
             color_name = self._colors_by_system_hex[system][hex_code]
             if filter_set is None or color_name in filter_set:
                 return FindResult(color_name, 0)
 
         # No direct hit, assemble list of lab_color/color_name pairs
-        if filter_set_is_mapping:
-            colors = ((_hex_to_lab(pair[0]), pair[1]) for pair in filter_set.iteritems())
-        else:
-            colors = self._colors_by_system_lab[system]
-            if filter_set is not None:
-                colors = (pair for pair in colors if pair[1] in set(filter_set))
+        colors = self._colors_by_system_lab[system]
+        if filter_set is not None:
+            colors = (pair for pair in colors if pair[1] in set(filter_set))
 
         # find minimal distance
         lab_color = _hex_to_lab(hex_code)
