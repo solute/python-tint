@@ -27,48 +27,46 @@ Examples:
   >>> tint_registry.find_nearest("013220", "de")
   FindResult(color_name=u'moosgrün', distance=5.924604488762661)
   >>> tint_registry.find_nearest("013220", filter_set={"00ffff": "cyan", "ffff00": "yellow"})
-  FindResult(color_name='cyan', distance=72.54986912349503)
+  FindResult(color_name=u'cyan', distance=72.54986912349503)
 
 """
 
 from __future__ import unicode_literals
 
 import io
-import os.path
 import os
 import collections
 import sys
+import csv
+import operator
 
-from pkg_resources import resource_listdir
-from pkg_resources import resource_filename
+import pkg_resources
 
-from colormath import color_objects
-from colormath import color_conversions
-from colormath import color_diff
+import colormath.color_diff
+import colormath.color_objects
+import colormath.color_conversions
 
 import icu
 
-from fuzzywuzzy import process
-from fuzzywuzzy import fuzz
-
+import fuzzywuzzy.process
+import fuzzywuzzy.fuzz
 
 MatchResult = collections.namedtuple("MatchResult", ("hex_code", "score"))
 FindResult = collections.namedtuple("FindResult", ("color_name", "distance"))
 
 
 def _hex_to_rgb(hex_code):
+    """
+    >>> _hex_to_rgb("007fff")
+    (0, 127, 255)
+    """
     return tuple(map(ord, hex_code.decode("hex")))
 
 
 def _hex_to_lab(hex_code):
     rgb_values = _hex_to_rgb(hex_code)
-    rgb_color = color_objects.sRGBColor(*rgb_values, is_upscaled=True)
-    return color_conversions.convert_color(rgb_color, color_objects.LabColor)
-
-
-def _read_colors(f):
-    lines = (line.partition("#") for line in f if not line.startswith("#"))
-    return [(part[0], part[2]) for part in lines]
+    rgb_color = colormath.color_objects.sRGBColor(*rgb_values, is_upscaled=True)
+    return colormath.color_conversions.convert_color(rgb_color, colormath.color_objects.LabColor)
 
 
 _normalize = icu.Normalizer2.getInstance(
@@ -79,7 +77,7 @@ _normalize = icu.Normalizer2.getInstance(
 
 
 class TintRegistry(object):
-    """ A registry for color names and systems
+    """A registry for color names, categorized by color systems.
 
     Args:
       load_defaults (bool, optional): Load default color systems provided
@@ -91,89 +89,107 @@ class TintRegistry(object):
         self._colors_by_system_lab = {}
         self._hex_by_color = {}
         if load_defaults:
-            for filename in resource_listdir("tint", "data"):
+            for filename in pkg_resources.resource_listdir("tint", "data"):
                 base, ext = os.path.splitext(filename)
-                if ext == ".txt":
-                    self.add_colors(base, resource_filename("tint", "data/" + filename))
+                if ext == ".csv":
+                    # Yes, it's correct to join this with "/" because docs say so
+                    # (it's no real path name)
+                    self.add_colors(base, pkg_resources.resource_stream("tint", "data/" + filename))
 
-    def add_colors(self, system, colors_or_filename):
+    def add_colors(self, system, color_definitions):
         """Add color definition to a given color system.
 
-        You may pass either a file-like object or a filename string pointing to a
-        color definition file. Each line in that input file should look like this::
+        You may pass either a file-like object or a filename string pointing
+        to a color definition csv file. Each line in that input file should
+        look like this::
 
-            café au lait #a67b5b
+            café au lait,a67b5b
 
-        i.e. a color name (possibly with whitespace), and a hex code prefixed
-        by `#` that will be interpreted as a sRGB value.
+        i.e. a color name (possibly with whitespace), and a hex code separated
+        by by `,` that will be interpreted as a sRGB value. Note that this is
+        standard excel-style csv.
 
-        If you provide a file-like object (i.e. one with a ``read()`` method), make
-        sure you have opened it with the correct encoding.
+        If you provide a file-like object (i.e. one with a ``read()`` method),
+        make sure you have opened it with the correct encoding.
 
-        Alternatively, you may pass a mapping (e.g. ``{u"café au lait": "a67b5b", ...}``)
-        or a sequence of tuples (e.g. ``[(u"café au lait", "a67b5b"), ...]``).
-        The color name will be saved lower-cased and stripped. For matching purposes,
-        a normalized version of the color name will be used (e.g. "weiß"->"weiss").
+        Alternatively, you may pass an iterable of tuples (e.g.
+        ``[(u"café au lait", "a67b5b"), ...]``). The color name will be saved
+        lower-cased and stripped. For matching purposes, a normalized version
+        of the color name will be used (e.g. "weiß"->"weiss").
 
-        Note that existing color definitions of the same (normalized) name will be
-        overwritten.
+        Note:
+          Existing color definitions of the same (normalized) name will be
+            overwritten, regardless of the color system.
 
         Args:
           system (string): The color system the colors should be added to
             (e.g. ``"en"``).
-          colors_or_filename (sequence of tuples, dict, filename, or file-like object): Either
-            a filename or a file-like object pointing to a color definition file,
+          color_definitions (sequence of tuples, dict, filename, or file-like object): Either
+            a filename or a file-like object pointing to a color definition csv file (excel style),
             or an iterable of tuples (e.g.  ``[("white", "ffffff"), ("red", "ff0000")]``)
             or a dict (e.g.  ``{"white": "ffffff", "red": "ff0000"}``).
 
         Raises:
           TypeError: If argument `color_or_filename` is not of an accepted type.
 
+        Examples:
+          >>> tint_registry = TintRegistry()
+          >>> color_definitions = {"greenish": "336633", "blueish": "334466"}
+          >>> tint_registry.add_colors("vague", color_definitions.iteritems())
+
         """
-        if hasattr(colors_or_filename, "read"):
-            colors = _read_colors(colors_or_filename)
-        elif isinstance(colors_or_filename, (str, unicode)):
-            with io.open(colors_or_filename, encoding="utf-8") as f:
-                colors = _read_colors(f)
-        elif isinstance(colors_or_filename, collections.Mapping):
-            colors = colors_or_filename.items()
-        elif isinstance(colors_or_filename, collections.Sequence):
-            colors = colors_or_filename
+        if hasattr(color_definitions, "read"):
+            colors = csv.reader(color_definitions)
+        elif isinstance(color_definitions, basestring):
+            with open(color_definitions, "rb") as f:
+                colors = list(csv.reader(f))
+        elif isinstance(color_definitions, collections.Iterable):
+            colors = color_definitions
         else:
             raise TypeError(
-                "argument 'colors_or_filename' must be a file-like object, "
+                "argument 'color_definitions' must be a file-like object, "
                 "a filename string, a mapping or a sequence of tuples"
             )
 
         if system not in self._colors_by_system_hex:
             self._colors_by_system_hex[system] = {}
-            self._colors_by_system_lab[system] = {}
+            self._colors_by_system_lab[system] = []
 
         for color_name, hex_code in colors:
             color_name = color_name.lower().strip()
-            hex_code = hex_code.lower().strip()
-            lab_color = _hex_to_lab(hex_code)
+            if not isinstance(color_name, unicode):
+                color_name = unicode(color_name, "utf-8")
+            hex_code = hex_code.lower().strip().strip("#")
 
             self._colors_by_system_hex[system][hex_code] = color_name
-            self._colors_by_system_lab[system][lab_color] = color_name
+            self._colors_by_system_lab[system].append((_hex_to_lab(hex_code), color_name))
             self._hex_by_color[_normalize(color_name)] = hex_code
 
     def match_name(self, in_string):
         """Match a color to a sRGB value.
+
+        The matching will be based purely on the input string and the color names in the
+        registry. If there's no direct hit, a fuzzy matching algorithm is applied. This method
+        will never fail to return a sRGB value, but depending on the score, it might or might
+        not be a sensible result – as a rule of thumb, any score less then 90 indicates that
+        there's a lot of guessing going on. It's the callers responsibility to judge if the return
+        value should be trusted.
+
+        Note:
+          For normalization purposes, this method implements "normalize an arbitrary color name
+            to a sRGB value".
 
         Args:
           in_string (string): The input string containing something resembling
             a color name.
 
         Returns:
-          A named tuple with the members `hex_code`[0] and `score`[1].
+          A named tuple with the members `hex_code` and `score`.
 
         Examples:
-          >>> tint_registry = tint.TintRegistry()
+          >>> tint_registry = TintRegistry()
           >>> tint_registry.match_name("rather white")
           MatchResult(hex_code=u'ffffff', score=95)
-          >>> tint_registry.match_name("qwertyuio")
-          MatchResult(hex_code=u'343434', score=29)
 
         """
         in_string = _normalize(in_string)
@@ -182,19 +198,26 @@ class TintRegistry(object):
 
         # We want the standard scorer *plus* the set scorer, because colors are often
         # (but not always) related by sub-strings
-        result_set_scorer = process.extract(
+        set_match = dict(fuzzywuzzy.process.extract(
             in_string,
             self._hex_by_color.keys(),
-            scorer=fuzz.token_set_ratio
-        )
-        result_standard_scorer = process.extract(in_string, self._hex_by_color.keys())
-        counter = collections.Counter(dict(result_set_scorer))
-        counter.update(collections.Counter(dict(result_standard_scorer)))
-        color_name, score = counter.most_common(1)[0]
+            scorer=fuzzywuzzy.fuzz.token_set_ratio
+        ))
+        standard_match = dict(fuzzywuzzy.process.extract(in_string, self._hex_by_color.keys()))
+
+        # This would be much easier with a collections.Counter, but alas! it's a 2.7 feature.
+        key_union = set(set_match) | set(standard_match)
+        counter = ((n, set_match.get(n, 0) + standard_match.get(n, 0)) for n in key_union)
+        color_name, score = sorted(counter, key=operator.itemgetter(1))[-1]
+
         return MatchResult(self._hex_by_color[color_name], score / 2)
 
     def find_nearest(self, hex_code, system=None, filter_set=None):
         """Find a color name that's most similar to a given sRGB hex code.
+
+        Note:
+          For normalization purposes, this method implements "normalize an arbitrary sRGB value
+            to a well-defined color name".
 
         Args:
           system (string, optional): The color system. Currently, ``"de"``, ``"en"`` and
@@ -202,7 +225,7 @@ class TintRegistry(object):
             mapping. Defaults to None.
           filter_set (dict or list of string, optional): Limits the output choices
             to fewer color names. If given a list of names (e.g. ``["black", "white"]``),
-            these names must be presen in the given system. If it's a dict of hex
+            these names must be present in the given system. If it's a dict of hex
             values and color names (e.g. ``{"000000": "black", "ffffff": "white"}`` -
             notice the hex strings make up the keys, not the values of the dict), the
             argument `system` is ignored and may be ommitted.  If omitted, all color
@@ -215,7 +238,7 @@ class TintRegistry(object):
           TypeError: If argument `system` is not passed and `filter_set` is not a mapping.
 
         Examples:
-          >>> tint_registry = tint.TintRegistry()
+          >>> tint_registry = TintRegistry()
           >>> tint_registry.find_nearest("54e6e4", system="en")
           FindResult(color_name=u'bright turquoise', distance=3.730288645055483)
           >>> tint_registry.find_nearest("54e6e4", "en", filter_set=("white", "black"))
@@ -228,37 +251,33 @@ class TintRegistry(object):
             raise TypeError(
                 "find_nearest() needs argument 'system' if 'filter_set' is not a Mapping"
             )
-
         hex_code = hex_code.lower().strip()
-        # Try direkt hit
+
+        # Try direct hit (fast path)
         if filter_set_is_mapping:
             if hex_code in filter_set:
                 return filter_set[hex_code]
-
         elif hex_code in self._colors_by_system_hex[system]:
             color_name = self._colors_by_system_hex[system][hex_code]
-            if filter_set is None or color_name in set(filter_set):
+            if filter_set is None or color_name in filter_set:
                 return FindResult(color_name, 0)
 
-        # No direkt hit
-        lab_color = _hex_to_lab(hex_code)
+        # No direct hit, assemble list of lab_color/color_name pairs
         if filter_set_is_mapping:
-            colors = {}
-            for hex_code, color_name in filter_set.items():
-                colors[_hex_to_lab(hex_code)] = color_name
+            colors = ((_hex_to_lab(pair[0]), pair[1]) for pair in filter_set.iteritems())
         else:
             colors = self._colors_by_system_lab[system]
             if filter_set is not None:
-                filter_set = set(filter_set)
-                colors = dict(pair for pair in colors.items() if pair[1] in filter_set)
+                colors = (pair for pair in colors if pair[1] in set(filter_set))
 
+        # find minimal distance
+        lab_color = _hex_to_lab(hex_code)
         min_distance = sys.float_info.max
-        min_color = None
-        for current_lab_color, current_color_name in colors.items():
-            current_lab_color = current_lab_color
-            distance = color_diff.delta_e_cie2000(lab_color, current_lab_color)
+        min_color_name = None
+        for current_lab_color, current_color_name in colors:
+            distance = colormath.color_diff.delta_e_cie2000(lab_color, current_lab_color)
             if distance < min_distance:
                 min_distance = distance
-                min_color = current_color_name
+                min_color_name = current_color_name
 
-        return FindResult(min_color, min_distance)
+        return FindResult(min_color_name, min_distance)
