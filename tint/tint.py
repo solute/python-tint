@@ -1,39 +1,7 @@
 # coding: utf-8
 
-"""Match human readable color names to sRBG values (and vice versa).
-
-`tint` was created to solve the problem of normalizing color strings of various
-languages and systems to a well defined set of color names. In order to do that,
-`tint` establishes a registry for color names and corresponding sRGB values. `tint`
-is shipped with default color definitions for english ("en"), german ("de") and
-RAL ("ral").
-
-You may query that registry for a sRGB hex value by passing it a color name -- if
-there's no exact match, a fuzzy match is applied.  Together with the hex value, a
-matching score is returned: 100 is best (exact match), lower means worse.
-
-Also, you may want to find the best name for a given sRGB value. Again, `tint` tries
-to match exactly, and failing that, it will find a color name with the minimal
-perceptual difference according to CIEDE2000. The color name and the color distance
-are returned: A distance of 0 is best, higher means worse.
-
-Examples:
-  >>> import tint
-  >>> tint_registry = tint.TintRegistry()
-  >>> tint_registry.match_name("a darker greenish color")
-  MatchResult(hex_code=u'013220', score=66)
-  >>> tint_registry.find_nearest("013220", "en")
-  FindResult(color_name=u'dark green', distance=0)
-  >>> tint_registry.find_nearest("013220", "de")
-  FindResult(color_name=u'moosgrün', distance=5.924604488762661)
-  >>> tint_registry.find_nearest("013220", filter_set={"00ffff": "cyan", "ffff00": "yellow"})
-  FindResult(color_name=u'cyan', distance=72.54986912349503)
-
-"""
-
 from __future__ import unicode_literals
 
-import io
 import os
 import collections
 import sys
@@ -94,9 +62,12 @@ class TintRegistry(object):
                 if ext == ".csv":
                     # Yes, it's correct to join this with "/" because docs say so
                     # (it's no real path name)
-                    self.add_colors(base, pkg_resources.resource_stream("tint", "data/" + filename))
+                    self.add_colors_from_file(
+                        base,
+                        pkg_resources.resource_stream("tint", "data/" + filename)
+                    )
 
-    def add_colors(self, system, color_definitions):
+    def add_colors_from_file(self, system, f_or_filename):
         """Add color definition to a given color system.
 
         You may pass either a file-like object or a filename string pointing
@@ -105,17 +76,8 @@ class TintRegistry(object):
 
             café au lait,a67b5b
 
-        i.e. a color name (possibly with whitespace), and a hex code separated
-        by by `,` that will be interpreted as a sRGB value. Note that this is
-        standard excel-style csv.
-
-        If you provide a file-like object (i.e. one with a ``read()`` method),
-        make sure you have opened it with the correct encoding.
-
-        Alternatively, you may pass an iterable of tuples (e.g.
-        ``[(u"café au lait", "a67b5b"), ...]``). The color name will be saved
-        lower-cased and stripped. For matching purposes, a normalized version
-        of the color name will be used (e.g. "weiß"->"weiss").
+        i.e. a color name and a sRGB hex code, separated by by `,`. Note that
+        this is a standard excel-style csv format without headers.
 
         Note:
           Existing color definitions of the same (normalized) name will be
@@ -124,13 +86,31 @@ class TintRegistry(object):
         Args:
           system (string): The color system the colors should be added to
             (e.g. ``"en"``).
-          color_definitions (sequence of tuples, dict, filename, or file-like object): Either
-            a filename or a file-like object pointing to a color definition csv file (excel style),
-            or an iterable of tuples (e.g.  ``[("white", "ffffff"), ("red", "ff0000")]``)
-            or a dict (e.g.  ``{"white": "ffffff", "red": "ff0000"}``).
+          color_definitions (filename, or file-like object): Either
+            a filename, or a file-like object pointing to a color definition
+            csv file (excel style).
 
-        Raises:
-          TypeError: If argument `color_or_filename` is not of an accepted type.
+        """
+        if hasattr(f_or_filename, "read"):
+            colors = (row for row in csv.reader(f_or_filename) if row)
+        else:
+            with open(f_or_filename, "rb") as f:
+                colors = [row for row in csv.reader(f) if row]
+
+        self.add_colors(system, colors)
+
+    def add_colors(self, system, colors):
+        """Add color definition to a given color system.
+
+        Note:
+          Existing color definitions of the same (normalized) name will be
+            overwritten, regardless of the color system.
+
+        Args:
+          system (string): The color system the colors should be added to
+            (e.g. ``"en"``).
+          color_definitions (sequence of tuples): An iterable of tuples
+            (e.g.  ``[("white", "ffffff"), ("red", "ff0000")]``)
 
         Examples:
           >>> tint_registry = TintRegistry()
@@ -138,28 +118,16 @@ class TintRegistry(object):
           >>> tint_registry.add_colors("vague", color_definitions.iteritems())
 
         """
-        if hasattr(color_definitions, "read"):
-            colors = csv.reader(color_definitions)
-        elif isinstance(color_definitions, basestring):
-            with open(color_definitions, "rb") as f:
-                colors = list(csv.reader(f))
-        elif isinstance(color_definitions, collections.Iterable):
-            colors = color_definitions
-        else:
-            raise TypeError(
-                "argument 'color_definitions' must be a file-like object, "
-                "a filename string, a mapping or a sequence of tuples"
-            )
 
         if system not in self._colors_by_system_hex:
             self._colors_by_system_hex[system] = {}
             self._colors_by_system_lab[system] = []
 
         for color_name, hex_code in colors:
+            hex_code = hex_code.lower().strip().strip("#")
             color_name = color_name.lower().strip()
             if not isinstance(color_name, unicode):
                 color_name = unicode(color_name, "utf-8")
-            hex_code = hex_code.lower().strip().strip("#")
 
             self._colors_by_system_hex[system][hex_code] = color_name
             self._colors_by_system_lab[system].append((_hex_to_lab(hex_code), color_name))

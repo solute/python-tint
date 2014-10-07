@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='tint',
-    version='0.1',
+    version='0.2',
     description='Friendly Color Normalization',
     #url='http://github.com/...',
     author='Christian Schramm',
@@ -12,12 +12,15 @@ setup(
     zip_safe=False,
     package_data={'tint': ['data/*.txt']},
     install_requires=[
-        "pytest",
         "colormath",
         "numpy",
         "pyicu",
         "fuzzywuzzy",
         "sphinxcontrib-napoleon",
+        "python-Levenshtein",
+    ],
+    tests_require=[
+        "pytest",
     ],
 )
 

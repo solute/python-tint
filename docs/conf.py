@@ -31,6 +31,7 @@ sys.path.insert(0, os.path.abspath('../'))
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
+    'sphinx.ext.autosummary',
     'sphinxcontrib.napoleon',
 ]
 
@@ -48,7 +49,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'tint'
-copyright = u'2014, Christian Schramm'
+copyright = u'2014, Christian Schramm, solute GmbH'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

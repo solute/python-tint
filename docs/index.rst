@@ -6,15 +6,16 @@
 tint – friendy color normalization
 ==================================
 
-.. .. toctree::
-..   :maxdepth: 2
+.. toctree::
+  :maxdepth: 2
 
 .. automodule:: tint
+   :members: TintRegistry
 
-API
-===
-.. autoclass:: TintRegistry
-   :members:
+.. API
+.. ===
+.. .. autoclass:: TintRegistry
+..    :members:
 
 
 .. Indices and tables
