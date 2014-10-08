@@ -1,9 +1,8 @@
 from setuptools import setup
-import tint
 
 setup(
     name="tint",
-    version=tint.__version__,
+    version=0.2,
     description="Friendly Color Normalization",
     #url="http://github.com/...",
     author="Christian Schramm",

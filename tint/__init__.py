@@ -27,12 +27,12 @@ Examples:
   FindResult(color_name=u'dark green', distance=0)
   >>> tint_registry.find_nearest("013220", "de")
   FindResult(color_name=u'moosgrün', distance=5.924604488762661)
-  >>> tint_registry.add_colors("limited", [("cyan", "00ffff"), ("yellow", "ffff00)])
+  >>> tint_registry.add_colors("limited", [("cyan", "00ffff"), ("yellow", "ffff00")])
   >>> tint_registry.find_nearest("013220", system="limited")
   FindResult(color_name=u'cyan', distance=72.54986912349503)
 
 """
 
-from .tint import TintRegistry
+from .registry import TintRegistry
 
 __version__ = "0.2"
