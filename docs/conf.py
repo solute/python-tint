@@ -267,17 +267,12 @@ texinfo_documents = [
 
 # Fix readthedocs.org compilation fails
 import sys
-try:
-    from unittest.mock import MagicMock
-except ImportError:
-    from mock import Mock as MagicMock
-
+from unittest.mock import MagicMock
 
 class Mock(MagicMock):
     @classmethod
     def __getattr__(cls, name):
         return Mock()
 
-MOCK_MODULES = ['python-Levenshtein', 'numpy', 'icu', 'colormath', 'fuzzywuzzy']
+MOCK_MODULES = ['icu']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
-
