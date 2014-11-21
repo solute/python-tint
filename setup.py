@@ -1,5 +1,23 @@
 from setuptools import setup
 
+import os
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+
+if not on_rtd:
+    install_requires = [
+        "colormath",
+        "numpy",
+        "pyicu",
+        "fuzzywuzzy",
+        "sphinxcontrib-napoleon",
+        "python-Levenshtein",
+    ]
+else:
+    install_requires = [
+        "sphinxcontrib-napoleon",
+    ]
+
+
 setup(
     name="tint",
     version="0.2",
@@ -21,14 +39,7 @@ setup(
     packages=["tint"],
     zip_safe=True,
     package_data={"tint": ["data/*"]},
-    install_requires=[
-        "colormath",
-        "numpy",
-        "pyicu",
-        "fuzzywuzzy",
-        "sphinxcontrib-napoleon",
-        "python-Levenshtein",
-    ],
+    install_requires=install_requires,
     tests_require=[
         "pytest",
     ],
