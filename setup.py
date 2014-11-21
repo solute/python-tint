@@ -15,6 +15,7 @@ if not on_rtd:
 else:
     install_requires = [
         "sphinxcontrib-napoleon",
+        "colormath",
     ]
 
 
