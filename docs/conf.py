@@ -278,6 +278,6 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
         return Mock()
 
-MOCK_MODULES = ['pyicu', 'python-Levenshtein', 'numpy']
+MOCK_MODULES = ['pyicu', 'python-Levenshtein', 'numpy', 'icu', 'PyICU']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
