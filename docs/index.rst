@@ -6,13 +6,14 @@
 tint – friendy color normalization
 ==================================
 
-Install `tint` with
+.. NODE::
+  Install `tint` with
 
-::
+  ::
 
-  pip install tint
+    pip install tint
 
-or clone from github_.
+  or clone from github_.
 
 .. _github: https://github.com/solute/python-tint/
 
