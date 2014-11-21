@@ -32,7 +32,14 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
         return Mock()
 
-MOCK_MODULES = ['icu', 'colormath', 'fuzzywuzzy']
+MOCK_MODULES = [
+    'icu',
+    'colormath',
+    'colormath.color_diff',
+    'colormath.color_objects',
+    'colormath.color_conversions',
+    'fuzzywuzzy',
+]
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 import tint
