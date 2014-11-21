@@ -22,4 +22,4 @@ License
 
 `tint` is published under the GPL2 only license; the LICENSE.txt for the full text.
 
-(c) 2014, solute GmbH
+Copyright (c) 2014, Christian Schramm, solute GmbH
