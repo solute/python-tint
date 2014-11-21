@@ -1,12 +1,12 @@
 tint - friendly color normalization
 ===================================
 
-`tint` helps you getting a sRBG-Value out of a color description string you happen
+`tint` helps you getting a sRBG-value out of a color description string you happen
 to stumble upon, as well as getting the best color name for any sRBG value you might
 feed it with. Combined, these two functionalities enable you to narrow any color string
 down to a well defined set of colors.
 
-For full documentation of the (tiny) API, look no further than here: #TODO
+For full documentation of the (tiny) API, look no further than [readthedocs](http://python-tint.readthedocs.org)
 
 Install
 -------
