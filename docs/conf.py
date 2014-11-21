@@ -20,7 +20,7 @@ import os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../'))
 
-#import tint
+import tint
 
 # -- General configuration ------------------------------------------------
 
@@ -278,6 +278,6 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
         return Mock()
 
-MOCK_MODULES = ['pyicu', 'python-Levenshtein', 'numpy', 'icu', 'PyICU', 'colormath']
+MOCK_MODULES = ['python-Levenshtein', 'numpy', 'icu', 'colormath']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
