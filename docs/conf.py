@@ -248,7 +248,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'tint', u'tint Documentation',
-   u'Christian Schramm', 'tint', 'One line description of project.',
+   u'Christian Schramm', 'tint', 'friendly color normalization',
    'Miscellaneous'),
 ]
 

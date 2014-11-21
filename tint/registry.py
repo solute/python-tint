@@ -27,6 +27,7 @@ import operator
 
 import pkg_resources
 
+import colormath
 import colormath.color_diff
 import colormath.color_objects
 import colormath.color_conversions
