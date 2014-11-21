@@ -22,15 +22,10 @@ sys.path.insert(0, os.path.abspath('../'))
 
 
 # Fix readthedocs.org compilation fails
-import sys
 try:
     from unittest.mock import MagicMock
 except ImportError:
     from mock import Mock as MagicMock
-
-# Fix readthedocs.org compilation fails
-import sys
-from unittest.mock import MagicMock
 
 class Mock(MagicMock):
     @classmethod
@@ -38,14 +33,6 @@ class Mock(MagicMock):
         return Mock()
 
 MOCK_MODULES = ['icu', 'colormath', 'fuzzywuzzy']
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
-
-class Mock(MagicMock):
-    @classmethod
-    def __getattr__(cls, name):
-        return Mock()
-
-MOCK_MODULES = ['icu']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 import tint
