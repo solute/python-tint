@@ -6,7 +6,7 @@
 tint – friendy color normalization
 ==================================
 
-.. NODE::
+.. NOTE::
   Install `tint` with
 
   ::
