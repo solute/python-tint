@@ -6,6 +6,15 @@
 tint – friendy color normalization
 ==================================
 
+Install `tint` with
+
+::
+  pip install tint
+
+or clone from github_
+
+.. _github: https://github.com/solute/python-tint/
+
 .. toctree::
   :maxdepth: 2
 
