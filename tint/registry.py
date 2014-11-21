@@ -27,12 +27,12 @@ import operator
 
 import pkg_resources
 
+import icu
+
 import colormath
 import colormath.color_diff
 import colormath.color_objects
 import colormath.color_conversions
-
-import icu
 
 import fuzzywuzzy.process
 import fuzzywuzzy.fuzz
