@@ -20,6 +20,19 @@ import os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../'))
 
+
+# Fix readthedocs.org compilation fails
+import sys
+from unittest.mock import MagicMock
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+        return Mock()
+
+MOCK_MODULES = ['icu']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+
 import tint
 
 # -- General configuration ------------------------------------------------
@@ -264,15 +277,3 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
 
-
-# Fix readthedocs.org compilation fails
-import sys
-from unittest.mock import MagicMock
-
-class Mock(MagicMock):
-    @classmethod
-    def __getattr__(cls, name):
-        return Mock()
-
-MOCK_MODULES = ['icu']
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
