@@ -39,6 +39,8 @@ MOCK_MODULES = [
     'colormath.color_objects',
     'colormath.color_conversions',
     'fuzzywuzzy',
+    'fuzzywuzzy.process',
+    'fuzzywuzzy.fuzz',
 ]
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
