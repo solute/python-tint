@@ -81,7 +81,6 @@ blue bell,a2a2d0
 blue crayola,1f75fe
 blue munsell,0093af
 blue ncs,0087bd
-blue pantone,0018a8
 blue pigment,333399
 blue ryb,0247fe
 blue sapphire,126180
@@ -433,7 +432,6 @@ green crayola,1cac78
 green html/css color,008000
 green munsell,00a877
 green ncs,009f6b
-green pantone,00ad43
 green pigment,00a550
 green ryb,66b032
 green-yellow,adff2f
@@ -583,7 +581,6 @@ magenta,ff00ff
 magenta crayola,ff55a3
 magenta dye,ca1f7b
 magenta haze,9f4576
-magenta pantone,d0417e
 magenta process,ff0090
 magic mint,aaf0d1
 magnolia,f8f4ff
@@ -689,7 +686,6 @@ opera mauve,b784a7
 orange,ff7f00
 orange color wheel,ff7f00
 orange crayola,ff7538
-orange pantone,ff5800
 orange peel,ff9f00
 orange ryb,fb9902
 orange web,ffa500
@@ -777,7 +773,6 @@ pineapple,563c5c
 pink,ffc0cb
 pink lace,ffddf4
 pink lavender,d8b2d1
-pink pantone,d74894
 pink pearl,e7accf
 pink sherbet,f78fa7
 pistachio,93c572
@@ -826,7 +821,6 @@ red crayola,ee204d
 red devil,860111
 red munsell,f2003c
 red ncs,c40233
-red pantone,ed2939
 red pigment,ed1c24
 red ryb,fe2712
 red-brown,a52a2a
@@ -883,7 +877,7 @@ rust,b7410e
 rusty red,da2c43
 sacramento state green,00563f
 saddle brown,8b4513
-sae/ece amber color,ff7e00
+ece amber color,ff7e00
 safety orange blaze orange,ff6700
 safety yellow,eed202
 saffron,f4c430
@@ -985,7 +979,6 @@ teal,008080
 teal blue,367588
 teal deer,99e6b3
 teal green,00827f
-telemagenta,cf3476
 tenné,cd5700
 terra cotta,e2725b
 thistle,d8bfd8
@@ -1088,7 +1081,6 @@ yellow crayola,fce883
 yellow munsell,efcc00
 yellow ncs,ffd300
 yellow orange,ffae42
-yellow pantone,fedf00
 yellow process,ffef00
 yellow rose,fff000
 yellow ryb,fefe33
