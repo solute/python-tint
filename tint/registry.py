@@ -67,7 +67,7 @@ class TintRegistry(object):
 
     Args:
       load_defaults (bool, optional): Load default color systems provided
-        by `tint`. Currently, that's "en", "de", and "ral". Defaults to True.
+        by `tint`. Currently, only "en" is provided by default. Defaults to True.
 
     """
     def __init__(self, load_defaults=True):
@@ -205,8 +205,8 @@ class TintRegistry(object):
         to a well-defined color name".
 
         Args:
-          system (string): The color system. Currently, ``"de"``, ``"en"`` and
-            ``"ral"`` are the default systems.
+          system (string): The color system. Currently, `"en"`` is the only default
+            system.
           filter_set (iterable of string, optional): Limits the output choices
             to fewer color names. The names (e.g. ``["black", "white"]``) must be
             present in the given system.

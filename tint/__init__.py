@@ -22,7 +22,7 @@
 various languages and systems to a well defined set of color names. In order
 to do that, `tint` establishes a registry for color names and corresponding
 sRGB values. `tint` ships with default color definitions for english ("en"),
-german ("de") and `RAL`_ ("ral").
+which is mostly constructed from `wikipedia`_ plus the webcolors definitions.
 
 You may query the aforementioned registry for a sRGB hex value by passing it a
 color name -- if there's no exact match, a fuzzy match is applied.  Together
@@ -41,16 +41,14 @@ Examples:
   MatchResult(hex_code=u'013220', score=66)
   >>> tint_registry.find_nearest("013220", "en")
   FindResult(color_name=u'dark green', distance=0)
-  >>> tint_registry.find_nearest("013220", "de")
-  FindResult(color_name=u'moosgrün', distance=5.924604488762661)
   >>> tint_registry.add_colors("limited", [("cyan", "00ffff"), ("yellow", "ffff00")])
   >>> tint_registry.find_nearest("013220", system="limited")
   FindResult(color_name=u'cyan', distance=72.54986912349503)
 
-.. _RAL:
-    http://en.wikipedia.org/wiki/RAL_colour_standard
+.. _wikipedia:
+    http://en.wikipedia.org/wiki/List_of_colors_(compact)
 """
 
 from .registry import TintRegistry
 
-__version__ = "0.2"
+__version__ = "0.3"
