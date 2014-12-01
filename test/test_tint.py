@@ -27,19 +27,14 @@ def test_white(tint_registry):
     assert tint_registry.match_name("white") == ("ffffff", 100)
 
 
-def test_weiss(tint_registry):
-    hex_code, score = tint_registry.match_name("weiss")
-    assert tint_registry.find_nearest(hex_code, "de").color_name == u"weiß"
-
-
 def test_nearest_filter(tint_registry):
     hex_code, score = tint_registry.match_name("pearl")
     nearest_color, distance = tint_registry.find_nearest(
         hex_code,
-        system="de",
-        filter_set=(u"weiß", "schwarz")
+        system="en",
+        filter_set=(u"white", "black")
     )
-    assert nearest_color == u"weiß"
+    assert nearest_color == u"white"
 
 
 def test_nearest_de_en(tint_registry):
@@ -50,12 +45,6 @@ def test_nearest_de_en(tint_registry):
         filter_set=("white", "black")
     )
     assert nearest_color == u"white"
-
-
-def test_ral_de(tint_registry):
-    hex_code, score = tint_registry.match_name("RAL 1000")
-    nearest_color, distance = tint_registry.find_nearest(hex_code, system="de")
-    assert nearest_color == u"grünbeige"
 
 
 def test_exact_nearest(tint_registry):
