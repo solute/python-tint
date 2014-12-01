@@ -21,7 +21,7 @@ else:
 
 setup(
     name="tint",
-    version="0.2",
+    version="0.3",
     description="Friendly Color Normalization",
     url="http://github.com/solute/python-tint",
     author="Christian Schramm",
