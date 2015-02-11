@@ -178,7 +178,7 @@ class TintRegistry(object):
 
         Examples:
           >>> tint_registry = TintRegistry()
-          >>> tint_registry.match_name("rather white")
+          >>> tint_registry.match_name("rather white", fuzzy=True)
           MatchResult(hex_code=u'ffffff', score=95)
 
         """
