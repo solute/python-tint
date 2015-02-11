@@ -38,7 +38,7 @@ def test_nearest_filter(tint_registry):
 
 
 def test_nearest_de_en(tint_registry):
-    hex_code, score = tint_registry.match_name(u"perlweiß")
+    hex_code, score = tint_registry.match_name(u"perlweiß", fuzzy=True)
     nearest_color, distance = tint_registry.find_nearest(
         hex_code,
         system="en",
@@ -55,7 +55,8 @@ def test_exact_nearest(tint_registry):
 
 
 def test_parse_no_valid_color_name(tint_registry):
-    assert tint_registry.match_name("not_a_valid_color").score < 100
+    with pytest.raises(ValueError):
+        tint_registry.match_name("not_a_valid_color")
 
 
 def test_find_no_exact_hex(tint_registry):
@@ -69,7 +70,7 @@ def test_find_exact_hex(tint_registry):
 
 def test_add_color_definitions_from_list(no_default_tint_registry):
     no_default_tint_registry.add_colors("vague", [("greenish", GREENISH), ("redish", REDISH)])
-    hex_code, score = no_default_tint_registry.match_name("green")
+    hex_code, score = no_default_tint_registry.match_name("green", fuzzy=True)
     nearest_color, distance = no_default_tint_registry.find_nearest(hex_code, system="vague")
     assert hex_code == GREENISH
     assert nearest_color == "greenish"
@@ -78,7 +79,7 @@ def test_add_color_definitions_from_list(no_default_tint_registry):
 def test_add_color_definitions_from_csv(no_default_tint_registry):
     csv = StringIO.StringIO(VAGUE_CSV)
     no_default_tint_registry.add_colors_from_file("vague", csv)
-    hex_code, score = no_default_tint_registry.match_name("green")
+    hex_code, score = no_default_tint_registry.match_name("green", fuzzy=True)
     nearest_color, distance = no_default_tint_registry.find_nearest(hex_code, system="vague")
     assert hex_code == GREENISH
     assert nearest_color == "greenish"

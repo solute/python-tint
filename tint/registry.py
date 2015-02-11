@@ -151,7 +151,7 @@ class TintRegistry(object):
             self._colors_by_system_lab[system].append((_hex_to_lab(hex_code), color_name))
             self._hex_by_color[_normalize(color_name)] = hex_code
 
-    def match_name(self, in_string):
+    def match_name(self, in_string, fuzzy=False):
         """Match a color to a sRGB value.
 
         The matching will be based purely on the input string and the color names in the
@@ -167,9 +167,14 @@ class TintRegistry(object):
         Args:
           in_string (string): The input string containing something resembling
             a color name.
+          fuzzy (bool, optional): Try fuzzy matching if no exact match was found.
+            Defaults to ``False``.
 
         Returns:
           A named tuple with the members `hex_code` and `score`.
+
+        Raises:
+          ValueError: If ``fuzzy`` is ``False`` and no match is found
 
         Examples:
           >>> tint_registry = TintRegistry()
@@ -180,6 +185,9 @@ class TintRegistry(object):
         in_string = _normalize(in_string)
         if in_string in self._hex_by_color:
             return MatchResult(self._hex_by_color[in_string], 100)
+
+        if not fuzzy:
+            raise ValueError("No match for %r found." % in_string)
 
         # We want the standard scorer *plus* the set scorer, because colors are often
         # (but not always) related by sub-strings
