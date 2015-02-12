@@ -21,7 +21,7 @@ Quickstart
 ```python
 >>> import tint
 >>> registry = tint.TintRegistry()
->>> registry.match_name("redish")
+>>> registry.match_name("redish", fuzzy=True)
 MatchResult(hex_code=u'ff0000', score=78)
 >>> registry.find_nearest("ff1010", "en")
 FindResult(color_name=u'red', distance=1.3001607954612469)
