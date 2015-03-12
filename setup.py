@@ -9,14 +9,13 @@ if not on_rtd:
         "numpy",
         "pyicu",
         "fuzzywuzzy",
-        "sphinxcontrib-napoleon",
         "python-Levenshtein",
         # Remove this if colormath bug #51 is resolved
         "networkx",
+        "sphinx>=1.3b2",
     ]
 else:
     install_requires = [
-        "sphinxcontrib-napoleon",
         "mock",
     ]
 
