@@ -11,6 +11,8 @@ if not on_rtd:
         "fuzzywuzzy",
         "sphinxcontrib-napoleon",
         "python-Levenshtein",
+        # Remove this if colormath bug #51 is resolved
+        "networkx",
     ]
 else:
     install_requires = [
